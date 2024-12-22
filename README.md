@@ -1,4 +1,4 @@
-# Master Your Media: Step-by-Step Guide to TVHeadend, Kodi, and Plex Integration
+# Step-by-Step Guide to TVHeadend, Kodi, and Plex Integration
 
 This guide will take you through the complete process of setting up TVHeadend, configuring Kodi and Plex as clients, and seamlessly managing your live TV, recorded shows, and media libraries.
 
