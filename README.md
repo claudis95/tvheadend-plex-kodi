@@ -6,7 +6,7 @@ This guide will take you through the complete process of setting up TVHeadend, c
 
 ## Table of Contents
 1. [Introduction](#introduction)
-2. [Installing Docker](#installing-docker)
+2. [Installing Docker](#installing-docker-tested-on-linux-debian)
 3. [Setting Up TVHeadend](#setting-up-tvheadend)
 4. [Configuring Kodi with TVHeadend](#configuring-kodi-with-tvheadend)
 5. [Configuring Plex with TVHeadend](#configuring-plex-with-tvheadend)
@@ -27,11 +27,13 @@ This guide will take you through the complete process of setting up TVHeadend, c
 ### Steps
 1. **Uninstall old versions**
    - Before you can install Docker Engine, you need to uninstall any conflicting packages.
+
      ```bash
      for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done
      ```
 2. **Add Docker's official GPG key:**
    - Set up Docker's apt repository.
+
      ```bash
      # Add Docker's official GPG key:
      sudo apt-get update
@@ -47,12 +49,14 @@ This guide will take you through the complete process of setting up TVHeadend, c
        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
      sudo apt-get update
      ```
-3. **Install the Docker packages**:
+3. **Install Docker packages**:
    - To install the latest version, run:
+
      ```bash
      sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
      ```
    - Verify that the installation is successful by running the hello-world image:
+
      ```bash
      sudo docker run hello-world
      ```
@@ -60,60 +64,80 @@ This guide will take you through the complete process of setting up TVHeadend, c
 
 ## Setting Up TVHeadend
 ### Prerequisites
-- Setup docker compose.yaml
+- Docker installed.
+- Configuring docker compose.yaml
 - (Suggested) Install Portainer to have a visual dashboard
 - A TV tuner (hardware) connected to your server.
-- Docker installed.
+
 
 ### Steps
 1. **Setup docker compose.yaml**:
-   - Create a file called docker compose.yaml or compose.yaml into a /opt folder (sudo is required)
+   - Create a file called `compose.yaml` into a `/opt` folder (sudo is required)
+
      ```bash
-      cd /opy
+      cd /opt
       touch compose.yaml
      ```
 
 2. **Install Portainer**
-   ```bash
-   ---
-     portainer:
-       container_name: portainer
-       image: portainer/portainer-ce
-       restart: always
-       environment:
-         - TZ=Europe/Rome
-       network_mode: host
-       volumes:
-         - /var/run/docker.sock:/var/run/docker.sock
-         - /opt/docker/portainer/data:/data
-   ```
+   - Portainer is a UI that allows the main functions you should do from the console. Copy following code to your compose file:
 
-### Steps
+     ```bash
+     ---
+       portainer:
+         container_name: portainer
+         image: portainer/portainer-ce
+         restart: always
+         environment:
+           - TZ=Europe/Rome
+         network_mode: host
+         volumes:
+           - /var/run/docker.sock:/var/run/docker.sock
+           - /opt/docker/portainer/data:/data
+      ```
+
+### Install and Setup Tvheadend
+
 1. **Install TVHeadend**:
-   Using Docker, run:
-   ```bash
-   docker run -d --name tvheadend \
-     -p 9981:9981 -p 9982:9982 \
-     -v /path/to/config:/config \
-     -v /path/to/recordings:/recordings \
-     --device=/dev/dvb-adapter0 \
-     linuxserver/tvheadend
-   ```
 
-2. **Access TVHeadend**:
+   - Copy following code to your compose file:
+
+     ```bash
+     tvheadend:
+       image: lscr.io/linuxserver/tvheadend:latest
+       container_name: tvheadend
+       environment:
+         - PUID=1000
+         - PGID=1000
+         - TZ=Europe/Rome
+         - RUN_OPTS= #optional
+       volumes:
+         - /opt/docker/tvheadend/data:/config
+         - /opt/docker/tvheadend/recordings:/recordings
+       ports:
+         - 9981:9981
+         - 9982:9982
+       devices:
+         - /dev/dri:/dev/dri #optional
+         - /dev/dvb:/dev/dvb #optional
+       restart: unless-stopped
+     ```
+
+3. **Access TVHeadend**:
    - Open your browser and go to `http://<your-server-ip>:9981`.
 
-3. **Initial Configuration**:
+4. **Initial Configuration**:
    - Follow the wizard to set up:
+     - **Expert Mode**: First of all select `Default view level:` to `Expert`
      - **Networks**: Add your tuner and assign the correct frequencies.
      - **Channel Scanning**: Scan for available channels.
      - **User Access**: Create accounts for Kodi and Plex.
 
-4. **Enable HDHomeRun Emulation**:
+5. **Enable HDHomeRun Emulation**:
    - In TVHeadend, go to `Configuration > General > Base`.
    - Enable **HDHomeRun emulation** to allow Plex to detect TVHeadend as a DVR.
 
-5. **Test TVHeadend**:
+6. **Test TVHeadend**:
    - Ensure you can stream live TV through the TVHeadend web interface.
 
 ---
@@ -153,7 +177,7 @@ This guide will take you through the complete process of setting up TVHeadend, c
 
 ## Managing Libraries and Live TV
 1. **Add Recorded Shows to Kodi and Plex**:
-   - Set the recording path in TVHeadend (e.g., `/path/to/recordings`).
+   - Set the recording path in TVHeadend (in this case `/opt/docker/tvheadend/recordings:/recordings`).
    - Add this path as a library in Kodi and Plex.
 
 2. **Organize Media Libraries**:
@@ -166,6 +190,8 @@ This guide will take you through the complete process of setting up TVHeadend, c
 ---
 
 ## Troubleshooting and Tips
+- **Driver Issue**:
+  - Check if Linux System recognizes the tuner otherwise search the internet for the model and if it is supported by the system
 - **Buffering Issues**:
   - Check network bandwidth and reduce stream quality if necessary.
 - **EPG Not Loading**:
