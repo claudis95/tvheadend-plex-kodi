@@ -7,7 +7,7 @@ This guide will take you through the complete process of setting up TVHeadend, c
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Installing Docker, Tvheadend and Plex Media Server with Docker Compose](#installing-docker-tvheadend-and-plex-media-server-with-docker-compose)
-3. [Setting Up TVHeadend](##setup-tvheadend)
+3. [Setting Up TVHeadend](#setup-tvheadend)
 4. [Configuring Kodi with TVHeadend](#configuring-kodi-with-tvheadend)
 5. [Configuring Plex with TVHeadend](#configuring-plex-with-tvheadend)
 6. [Managing Libraries and Live TV](#managing-libraries-and-live-tv)
